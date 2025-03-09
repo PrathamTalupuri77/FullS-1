@@ -1,0 +1,31 @@
+services:
+  database:
+    image: postgres:15
+    container_name: FullS-1_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Pratham@197580
+      POSTGRES_DB: FullS-1
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: nestjs_backend
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:Pratham@197580@database:5432/FullS-1?schema=public"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+volumes:
+  pgdata:
