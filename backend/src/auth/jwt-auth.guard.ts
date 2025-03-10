@@ -1,30 +1,16 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { AuthenticatedRequest } from './types'; // Import the extended type
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  canActivate(context: ExecutionContext) {
+    return super.canActivate(context); // Calls Passport's JWT validation
+  }
 
-  canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>(); // Use the new type
-    const authHeader = request.headers.authorization;
-
-    if (!authHeader) {
-      throw new UnauthorizedException('No token provided');
-    }
-
-    const token = authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
-    if (!token) {
-      throw new UnauthorizedException('Invalid token format');
-    }
-
-    try {
-      const decoded = this.jwtService.verify(token); // Verify token
-      request.user = decoded; // ✅ Now TypeScript recognizes 'user'
-      return true;
-    } catch (error) {
+  handleRequest(err, user, info) {
+    if (err || !user) {
       throw new UnauthorizedException('Invalid or expired token');
     }
+    return user;
   }
 }

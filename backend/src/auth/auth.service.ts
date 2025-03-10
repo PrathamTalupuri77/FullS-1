@@ -41,7 +41,7 @@ export class AuthService {
     const user = await this.validateUser(email, password);
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      return { message: 'Invalid credentials' };
     }
 
     // Generate JWT Token
